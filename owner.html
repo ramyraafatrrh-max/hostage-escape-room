@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#070b12" />
+  <meta name="robots" content="noindex,nofollow,noarchive" />
+  <title>Mission Command</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="toast" class="toast hidden"></div>
+  <section id="ownerLogin" class="screen center-screen">
+    <form id="ownerLoginForm" class="panel auth-card">
+      <p class="eyebrow danger">OWNER ONLY</p><h2>Mission Command</h2>
+      <label for="ownerEmail">Email</label><input id="ownerEmail" type="email" required />
+      <label for="ownerPassword">Password</label><input id="ownerPassword" type="password" required />
+      <button class="primary" type="submit">Sign in</button>
+    </form>
+  </section>
+  <section id="ownerApp" class="screen hidden">
+    <header class="topbar owner-top"><div><p class="eyebrow danger">OWNER CONTROL</p><h1>Mission Command</h1></div><div class="actions"><button id="startGameBtn" class="primary">Start 60:00 timer</button><button id="resetGameBtn" class="secondary">Reset</button><button id="logoutBtn" class="secondary">Sign out</button></div></header>
+    <main class="owner-main">
+      <div class="panel countdown"><span>GLOBAL COUNTDOWN</span><strong id="ownerTimer">60:00</strong><small id="gameStatus">Waiting to start</small></div>
+      <div id="teamsGrid" class="teams-grid"></div>
+    </main>
+  </section>
+  <script type="module" src="owner.js"></script>
+</body>
+</html>

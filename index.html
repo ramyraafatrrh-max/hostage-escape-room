@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#070b12" />
+  <title>Operation: Last Breath</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="toast" class="toast hidden"></div>
+  <section id="landing" class="screen center-screen">
+    <div class="panel auth-card">
+      <p class="eyebrow danger">SECURE RESCUE CHANNEL</p>
+      <h1>Operation: Last Breath</h1>
+      <p class="muted">Four teams. One hostage each. Sixty minutes.</p>
+      <label for="teamName">Team name</label>
+      <input id="teamName" maxlength="30" placeholder="Enter your team name" />
+      <button id="registerBtn" class="primary">Register this device</button>
+    </div>
+  </section>
+
+  <section id="playerApp" class="screen hidden">
+    <header class="topbar"><div><p id="teamLabel" class="eyebrow danger"></p><h2>Hostage Rescue</h2></div><div id="playerTimer" class="timer">60:00</div></header>
+    <main class="mobile-main">
+      <div id="hostageTab" class="tab-panel">
+        <div class="hostage-scene" aria-label="A hostage silhouette tied to a chair in a dark dungeon">
+          <div class="lamp"></div><div class="brick b1"></div><div class="brick b2"></div><div class="brick b3"></div>
+          <div class="hostage"><div class="head"></div><div class="body"></div><div class="arms"></div><div class="chair"></div></div>
+          <div class="gas"></div>
+          <div class="gas-card"><span>Gas concentration</span><strong>RISING</strong><div class="bar"><i id="gasBar"></i></div></div>
+        </div>
+      </div>
+      <div id="missionsTab" class="tab-panel hidden">
+        <div class="panel progress-panel"><div class="spread"><span>Mission progress</span><strong id="progressText">0 / 5</strong></div><div class="bar"><i id="progressBar"></i></div></div>
+        <div id="taskList" class="task-list"></div>
+      </div>
+    </main>
+    <nav class="bottom-nav"><button id="hostageNav" class="active">◉<span>Hostage View</span></button><button id="missionsNav">◎<span>Missions</span></button></nav>
+  </section>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

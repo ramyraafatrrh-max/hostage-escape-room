@@ -1,0 +1,23 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, updateDoc, onSnapshot, collection, query, serverTimestamp, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import { firebaseConfig } from "./firebase-config.js";
+const OWNER_EMAIL="ramyraafat.rrh@gmail.com";
+const TASKS=["Decode the transmission","Identify the antidote","Unlock the control panel","Trace the ventilation route","Enter the release code"];
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
+let game={},tickHandle=null,teamsUnsub=null;
+function showOwner(loggedIn){$("ownerLogin").classList.toggle("hidden",loggedIn);$("ownerApp").classList.toggle("hidden",!loggedIn);}
+function toast(message){$("toast").textContent=message;$("toast").classList.remove("hidden");setTimeout(()=>$("toast").classList.add("hidden"),3500);}
+function friendly(e){console.error(e);return e.message?.replace("Firebase: ","")||"Something went wrong.";}
+function escapeHtml(v){return String(v).replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));}
+$("ownerLoginForm").onsubmit=async e=>{e.preventDefault();try{const email=$("ownerEmail").value.trim().toLowerCase();if(email!==OWNER_EMAIL)throw new Error("This account is not configured as the owner.");await signInWithEmailAndPassword(auth,email,$("ownerPassword").value);}catch(err){toast(friendly(err));}};
+$("logoutBtn").onclick=async()=>{if(teamsUnsub)teamsUnsub();await signOut(auth);};
+function openOwner(){showOwner(true);onSnapshot(doc(db,"games","current"),s=>{game=s.exists()?s.data():{};startClock();});teamsUnsub=onSnapshot(query(collection(db,"teams")),snap=>renderOwnerTeams(snap.docs));}
+function renderOwnerTeams(docs){$("teamsGrid").innerHTML=docs.length?docs.slice(0,4).map(d=>{const t=d.data(),solved=t.solved||{},subs=t.submissions||{},count=Object.values(solved).filter(Boolean).length;const answers=TASKS.map((title,i)=>{const k=`task${i+1}`,response=subs[k];return `<div class="review"><div><b>${i+1}. ${title}</b><p>${response?escapeHtml(response):"No response"}</p></div>${response?`<div><button class="correct" data-id="${d.id}" data-key="${k}" data-value="true">Correct</button><button class="wrong" data-id="${d.id}" data-key="${k}" data-value="false">Incorrect</button></div>`:""}</div>`}).join("");return `<article class="panel team-card"><div class="spread"><h2>${escapeHtml(t.name)}</h2><strong>${count}/5 solved</strong></div><div class="bar"><i style="width:${count*20}%"></i></div><details><summary>Review responses</summary>${answers}</details></article>`}).join(""):"<div class='panel empty'>No teams registered yet.</div>";document.querySelectorAll(".correct,.wrong").forEach(b=>b.onclick=()=>markAnswer(b.dataset.id,b.dataset.key,b.dataset.value==="true"));}
+async function markAnswer(id,key,value){try{await updateDoc(doc(db,"teams",id),{[`solved.${key}`]:value,updatedAt:serverTimestamp()});toast(value?"Marked correct.":"Marked incorrect.");}catch(e){toast(friendly(e));}}
+$("startGameBtn").onclick=async()=>{try{await setDoc(doc(db,"games","current"),{status:"running",startedAt:serverTimestamp(),durationSeconds:3600,updatedAt:serverTimestamp()},{merge:true});toast("The 60-minute countdown has started.");}catch(e){toast(friendly(e));}};
+$("resetGameBtn").onclick=async()=>{if(!confirm("Reset the timer and all team answers/progress?"))return;try{const batch=writeBatch(db);batch.set(doc(db,"games","current"),{status:"waiting",durationSeconds:3600,updatedAt:serverTimestamp()});const snap=await getDocs(collection(db,"teams"));snap.forEach(d=>batch.update(d.ref,{submissions:{},solved:{},updatedAt:serverTimestamp()}));await batch.commit();toast("Game reset.");}catch(e){toast(friendly(e));}};
+function startClock(){clearInterval(tickHandle);updateClock();tickHandle=setInterval(updateClock,1000);}
+function secondsLeft(){if(game.status!=="running"||!game.startedAt)return game.durationSeconds||3600;return Math.max(0,(game.durationSeconds||3600)-Math.floor((Date.now()-game.startedAt.toMillis())/1000));}
+function updateClock(){const left=secondsLeft(),m=String(Math.floor(left/60)).padStart(2,"0"),s=String(left%60).padStart(2,"0");$("ownerTimer").textContent=`${m}:${s}`;$("gameStatus").textContent=game.status==="running"?(left?"Game in progress":"TIME EXPIRED"):"Waiting to start";}
+onAuthStateChanged(auth,user=>{if(user?.email?.toLowerCase()===OWNER_EMAIL)openOwner();else showOwner(false);});
