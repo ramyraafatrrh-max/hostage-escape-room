@@ -99,3 +99,8 @@ The player page contains no button, menu, or link to the owner page. `owner.html
 ## Hostage video and live start behavior
 
 The player page includes `hostage-loop.mp4` and a poster image. Before Start, players see a waiting overlay and 60:00. When the owner starts, the Firestore listener removes the overlay, starts the muted inline video, and begins the synchronized countdown.
+
+
+## Reset behavior
+
+Reset now changes `games/current` to waiting and deletes every document in the `teams` collection. Each player device listens to its own team document; when that document is deleted, the device signs out of anonymous authentication and returns to team registration. Start changes the game document to running, which switches player devices from the waiting screen to the dungeon video and shows the synchronized timer both in the header and over the dungeon.

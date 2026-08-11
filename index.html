@@ -24,11 +24,17 @@
     <header class="topbar"><div><p id="teamLabel" class="eyebrow danger"></p><h2>Hostage Rescue</h2></div><div id="playerTimer" class="timer">60:00</div></header>
     <main class="mobile-main">
       <div id="hostageTab" class="tab-panel">
-        <div class="hostage-scene" aria-label="Live hostage camera in a dark dungeon">
-          <video id="hostageVideo" class="hostage-video" autoplay muted loop playsinline preload="auto" poster="hostage-dungeon.png"><source src="hostage-loop.mp4" type="video/mp4" /></video>
-          <div id="waitingOverlay" class="waiting-overlay"><strong>MISSION NOT STARTED</strong><span>Waiting for Mission Command</span></div>
+        <div id="preGameView" class="panel pregame-view">
+          <div class="pregame-pulse">⌛</div>
+          <p class="eyebrow danger">MISSION NOT STARTED</p>
+          <h2>Waiting for Mission Command</h2>
+          <p class="muted">The hostage camera will activate when the owner starts the game.</p>
+        </div>
+        <div id="dungeonView" class="hostage-scene hidden" aria-label="Live hostage camera in a dark dungeon">
+          <video id="hostageVideo" class="hostage-video" muted loop playsinline preload="auto" poster="hostage-dungeon.png"><source src="hostage-loop.mp4" type="video/mp4" /></video>
           <div class="video-vignette"></div>
-          <div class="gas-card"><span>Gas concentration</span><strong id="gasStatus">STANDBY</strong><div class="bar"><i id="gasBar"></i></div></div>
+          <div class="dungeon-timer"><span>TIME REMAINING</span><strong id="dungeonTimer">60:00</strong></div>
+          <div class="gas-card"><span>Gas concentration</span><strong id="gasStatus">RISING</strong><div class="bar"><i id="gasBar"></i></div></div>
         </div>
       </div>
       <div id="missionsTab" class="tab-panel hidden">
