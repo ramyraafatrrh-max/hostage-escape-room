@@ -45,19 +45,29 @@ function friendly(error) {
   return error.message?.replace("Firebase: ", "") || "Something went wrong.";
 }
 
-async function unlockAudio(element, volume) {
-  if (!element) return;
+async function unlockAudio(element, volume, label) {
+  if (!element) throw new Error(`${label} element is missing from index.html.`);
   element.volume = volume;
-  await element.play();
-  element.pause();
-  element.currentTime = 0;
+  element.load();
+  try {
+    await element.play();
+    element.pause();
+    element.currentTime = 0;
+    return true;
+  } catch (error) {
+    console.error(`${label} could not be played. Check its filename and codec.`, error);
+    return false;
+  }
 }
 
 async function enableAlerts() {
   try {
-    await unlockAudio($("coughAlarm"), 0.65);
-    await unlockAudio($("dungeonMusic"), 0.14);
-    await unlockAudio($("movieMusic"), 0.42);
+    const results = await Promise.all([
+      unlockAudio($("coughAlarm"), 0.65, "Cough alarm"),
+      unlockAudio($("dungeonMusic"), 0.14, "Dungeon ambience"),
+      unlockAudio($("movieMusic"), 0.42, "Saw soundtrack")
+    ]);
+    if (!results[2]) throw new Error("Saw-SoundTrack.mp4 could not be loaded. Confirm the exact filename and that the MP4 contains a browser-supported AAC audio track.");
 
     audioEnabled = true;
     localStorage.setItem("escapeAudioEnabled", "true");
@@ -70,9 +80,10 @@ async function enableAlerts() {
     updateAlertStatus();
     toast("Sound alerts and background music enabled. Keep this page open during the game.");
   } catch (error) {
+    console.error(error);
     audioEnabled = false;
     localStorage.removeItem("escapeAudioEnabled");
-    toast("Audio could not be enabled. Check the browser sound permissions and confirm all audio files exist.");
+    toast(error.message || "Audio could not be enabled. Check the browser sound permissions and confirm all audio files exist.");
   }
 }
 
