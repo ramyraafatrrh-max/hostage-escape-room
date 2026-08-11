@@ -29,6 +29,8 @@
           <p class="eyebrow danger">MISSION NOT STARTED</p>
           <h2>Waiting for Mission Command</h2>
           <p class="muted">The hostage camera will activate when the owner starts the game.</p>
+          <button id="enableAlertsBtn" class="primary alert-button">Enable sound alerts</button>
+          <small id="alertStatus" class="alert-status">Tap once before the game. An alarm will play every 10 minutes.</small>
         </div>
         <div id="dungeonView" class="hostage-scene hidden" aria-label="Live hostage camera in a dark dungeon">
           <video id="hostageVideo" class="hostage-video" muted loop playsinline preload="auto" poster="hostage-dungeon.png"><source src="hostage-loop.mp4" type="video/mp4" /></video>
@@ -45,6 +47,8 @@
     <nav class="bottom-nav"><button id="hostageNav" class="active">◉<span>Hostage View</span></button><button id="missionsNav">◎<span>Missions</span></button></nav>
   </section>
 
+  <audio id="coughAlarm" src="cough-alarm.wav" preload="auto"></audio>
+  <audio id="dungeonMusic" src="dungeon-ambient.wav" preload="auto" loop></audio>
   <script type="module" src="app.js"></script>
 </body>
 </html>

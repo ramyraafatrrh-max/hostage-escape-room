@@ -104,3 +104,15 @@ The player page includes `hostage-loop.mp4` and a poster image. Before Start, pl
 ## Reset behavior
 
 Reset now changes `games/current` to waiting and deletes every document in the `teams` collection. Each player device listens to its own team document; when that document is deleted, the device signs out of anonymous authentication and returns to team registration. Start changes the game document to running, which switches player devices from the waiting screen to the dungeon video and shows the synchronized timer both in the header and over the dungeon.
+
+
+## Ten-minute cough alerts and phone locking
+
+Each player must tap **Enable sound alerts** once before the game, because mobile browsers normally block audible playback until a user interacts with the page. During an active visible session, `cough-alarm.wav` plays at 50, 40, 30, 20, and 10 minutes remaining. The app also requests a Screen Wake Lock to keep the display awake while the game is visible. A static GitHub Pages site cannot guarantee timed audio after a player manually locks the phone because mobile operating systems may suspend the browser. Reliable lock-screen alerts require Web Push plus Firebase Cloud Messaging/Cloud Functions or a native mobile app. The Firestore timestamp still keeps the timer accurate when the page becomes active again.
+
+
+## Background music
+
+The package includes an original dark ambient loop named `dungeon-ambient.wav`. After each player taps **Enable sound alerts**, the track starts automatically when the owner starts the timer, loops softly underneath the dungeon scene, and stops and rewinds when the owner resets the game or the timer reaches zero. The package does not include copyrighted film music. If you separately obtain a lawful event/public-performance license and an authorized audio file, replace `dungeon-ambient.wav` while keeping the same filename and WAV format.
+
+Reset also clears the owner team grid immediately, deletes every Firestore team document in the same batch, and leaves the dashboard showing **No teams registered yet** until new devices register.
