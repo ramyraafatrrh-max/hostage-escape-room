@@ -116,3 +116,8 @@ Each player must tap **Enable sound alerts** once before the game, because mobil
 The package includes an original dark ambient loop named `dungeon-ambient.wav`. After each player taps **Enable sound alerts**, the track starts automatically when the owner starts the timer, loops softly underneath the dungeon scene, and stops and rewinds when the owner resets the game or the timer reaches zero. The package does not include copyrighted film music. If you separately obtain a lawful event/public-performance license and an authorized audio file, replace `dungeon-ambient.wav` while keeping the same filename and WAV format.
 
 Reset also clears the owner team grid immediately, deletes every Firestore team document in the same batch, and leaves the dashboard showing **No teams registered yet** until new devices register.
+
+
+## Team access codes
+
+Registration requires a team access code and confirmation. The value is stored in each team document as `accessCode` for an authorized connected application. Players are warned not to reuse a personal password. Publish the updated `firestore.rules` after deploying the web files. Existing teams must be reset and register again.

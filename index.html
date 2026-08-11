@@ -16,8 +16,19 @@
       <h1>Operation: Last Breath</h1>
       <p class="muted">Four teams. One hostage each. Sixty minutes.</p>
       <label for="teamName">Team name</label>
-      <input id="teamName" maxlength="30" placeholder="Enter your team name" />
-      <button id="registerBtn" class="primary">Register this device</button>
+      <input id="teamName" maxlength="30" placeholder="Enter your team name" autocomplete="organization" />
+
+      <label for="teamAccessCode">Team access code</label>
+      <div class="password-row">
+        <input id="teamAccessCode" type="password" minlength="6" maxlength="30" autocomplete="new-password" placeholder="Create a team access code" />
+        <button id="toggleAccessCode" class="secondary reveal-button" type="button" aria-label="Show or hide access code">Show</button>
+      </div>
+
+      <label for="confirmTeamAccessCode">Confirm access code</label>
+      <input id="confirmTeamAccessCode" type="password" minlength="6" maxlength="30" autocomplete="new-password" placeholder="Enter the access code again" />
+      <small class="access-code-note">Do not use a personal password. This code may be shared with the game administrator and connected game applications.</small>
+
+      <button id="registerBtn" class="primary register-button">Register this device</button>
     </div>
   </section>
 

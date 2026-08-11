@@ -16,11 +16,15 @@ service cloud.firestore {
                     && request.resource.data.ownerUid == request.auth.uid
                     && request.resource.data.name is string
                     && request.resource.data.name.size() >= 1
-                    && request.resource.data.name.size() <= 30;
+                    && request.resource.data.name.size() <= 30
+                    && request.resource.data.accessCode is string
+                    && request.resource.data.accessCode.size() >= 6
+                    && request.resource.data.accessCode.size() <= 30;
       allow update: if isOwner() || (
         signedIn() && request.auth.uid == teamId
         && request.resource.data.ownerUid == resource.data.ownerUid
         && request.resource.data.name == resource.data.name
+        && request.resource.data.accessCode == resource.data.accessCode
         && request.resource.data.solved == resource.data.solved
       );
       allow delete: if isOwner();

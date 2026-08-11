@@ -185,9 +185,23 @@ function switchTab(name) {
   $("missionsNav").classList.toggle("active", name === "missions");
 }
 
+$("toggleAccessCode").onclick = () => {
+  const accessCode = $("teamAccessCode");
+  const confirmation = $("confirmTeamAccessCode");
+  const reveal = accessCode.type === "password";
+  accessCode.type = reveal ? "text" : "password";
+  confirmation.type = reveal ? "text" : "password";
+  $("toggleAccessCode").textContent = reveal ? "Hide" : "Show";
+};
+
 $("registerBtn").onclick = async () => {
   const teamName = cleanTeamName($("teamName").value);
+  const accessCode = $("teamAccessCode").value.trim();
+  const confirmation = $("confirmTeamAccessCode").value.trim();
+
   if (!teamName) return toast("Enter a team name.");
+  if (accessCode.length < 6 || accessCode.length > 30) return toast("The team access code must contain between 6 and 30 characters.");
+  if (accessCode !== confirmation) return toast("The access codes do not match.");
 
   try {
     const credentials = auth.currentUser?.isAnonymous ? { user: auth.currentUser } : await signInAnonymously(auth);
@@ -198,6 +212,7 @@ $("registerBtn").onclick = async () => {
       await setDoc(reference, {
         name: teamName,
         ownerUid: credentials.user.uid,
+        accessCode,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         submissions: {},
@@ -233,6 +248,8 @@ function openPlayer(uid) {
       stopAndRewind($("hostageVideo"));
       currentTeam = null;
       $("teamName").value = "";
+      $("teamAccessCode").value = "";
+      $("confirmTeamAccessCode").value = "";
       show("landing");
       toast("The game was reset. Register your team for the next round.");
       await signOut(auth);
