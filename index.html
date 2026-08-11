@@ -4,52 +4,171 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#070b12" />
+
   <title>Operation: Last Breath</title>
+
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
   <div id="toast" class="toast hidden"></div>
+
+  <!-- Team registration screen -->
   <section id="landing" class="screen center-screen">
     <div class="panel auth-card">
       <p class="eyebrow danger">SECURE RESCUE CHANNEL</p>
+
       <h1>Operation: Last Breath</h1>
-      <p class="muted">Four teams. One hostage each. Sixty minutes.</p>
+
+      <p class="muted">
+        Four teams. One hostage each. Sixty minutes.
+      </p>
+
       <label for="teamName">Team name</label>
-      <input id="teamName" maxlength="30" placeholder="Enter your team name" />
-      <button id="registerBtn" class="primary">Register this device</button>
+
+      <input
+        id="teamName"
+        maxlength="30"
+        placeholder="Enter your team name"
+      />
+
+      <button id="registerBtn" class="primary">
+        Register this device
+      </button>
     </div>
   </section>
 
+  <!-- Player application -->
   <section id="playerApp" class="screen hidden">
-    <header class="topbar"><div><p id="teamLabel" class="eyebrow danger"></p><h2>Hostage Rescue</h2></div><div id="playerTimer" class="timer">60:00</div></header>
+    <header class="topbar">
+      <div>
+        <p id="teamLabel" class="eyebrow danger"></p>
+        <h2>Hostage Rescue</h2>
+      </div>
+
+      <div id="playerTimer" class="timer">
+        60:00
+      </div>
+    </header>
+
     <main class="mobile-main">
+      <!-- Hostage tab -->
       <div id="hostageTab" class="tab-panel">
+
+        <!-- Waiting screen shown before the owner starts -->
         <div id="preGameView" class="panel pregame-view">
           <div class="pregame-pulse">⌛</div>
-          <p class="eyebrow danger">MISSION NOT STARTED</p>
+
+          <p class="eyebrow danger">
+            MISSION NOT STARTED
+          </p>
+
           <h2>Waiting for Mission Command</h2>
-          <p class="muted">The hostage camera will activate when the owner starts the game.</p>
-          <button id="enableAlertsBtn" class="primary alert-button">Enable sound alerts</button>
-          <small id="alertStatus" class="alert-status">Tap once before the game. An alarm will play every 10 minutes.</small>
+
+          <p class="muted">
+            The hostage camera will activate when the owner starts the game.
+          </p>
+
+          <button
+            id="enableAlertsBtn"
+            class="primary alert-button"
+          >
+            Enable sound alerts
+          </button>
+
+          <small id="alertStatus" class="alert-status">
+            Tap once before the game. Music and sound alerts will be enabled.
+          </small>
         </div>
-        <div id="dungeonView" class="hostage-scene hidden" aria-label="Live hostage camera in a dark dungeon">
-          <video id="hostageVideo" class="hostage-video" muted loop playsinline preload="auto" poster="hostage-dungeon.png"><source src="hostage-loop.mp4" type="video/mp4" /></video>
+
+        <!-- Dungeon shown when the owner starts the timer -->
+        <div
+          id="dungeonView"
+          class="hostage-scene hidden"
+          aria-label="Live hostage camera in a dark dungeon"
+        >
+          <video
+            id="hostageVideo"
+            class="hostage-video"
+            muted
+            loop
+            playsinline
+            preload="auto"
+            poster="hostage-dungeon.png"
+          >
+            hostage-loop.mp4
+          </video>
+
           <div class="video-vignette"></div>
-          <div class="dungeon-timer"><span>TIME REMAINING</span><strong id="dungeonTimer">60:00</strong></div>
-          <div class="gas-card"><span>Gas concentration</span><strong id="gasStatus">RISING</strong><div class="bar"><i id="gasBar"></i></div></div>
+
+          <div class="dungeon-timer">
+            <span>TIME REMAINING</span>
+            <strong id="dungeonTimer">60:00</strong>
+          </div>
+
+          <div class="gas-card">
+            <span>Gas concentration</span>
+
+            <strong id="gasStatus">
+              RISING
+            </strong>
+
+            <div class="bar">
+              <i id="gasBar"></i>
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- Missions tab -->
       <div id="missionsTab" class="tab-panel hidden">
-        <div class="panel progress-panel"><div class="spread"><span>Mission progress</span><strong id="progressText">0 / 5</strong></div><div class="bar"><i id="progressBar"></i></div></div>
+        <div class="panel progress-panel">
+          <div class="spread">
+            <span>Mission progress</span>
+            <strong id="progressText">0 / 5</strong>
+          </div>
+
+          <div class="bar">
+            <i id="progressBar"></i>
+          </div>
+        </div>
+
         <div id="taskList" class="task-list"></div>
       </div>
     </main>
-    <nav class="bottom-nav"><button id="hostageNav" class="active">◉<span>Hostage View</span></button><button id="missionsNav">◎<span>Missions</span></button></nav>
+
+    <!-- Mobile bottom navigation -->
+    <nav class="bottom-nav">
+      <button id="hostageNav" class="active">
+        ◉
+        <span>Hostage View</span>
+      </button>
+
+      <button id="missionsNav">
+        ◎
+        <span>Missions</span>
+      </button>
+    </nav>
   </section>
 
-  <audio id="coughAlarm" src="cough-alarm.wav" preload="auto"></audio>
-  <audio id="dungeonMusic" src="dungeon-ambient.wav" preload="auto" loop></audio>
-  <audio id="dungeonMusic" src="Saw-SoundTrack.mp4" preload="auto" loop></audio>
+  <!-- Coughing alarm -->
+  <audio
+    id="coughAlarm"
+    src="cough-alarm.wav"
+    preload="auto"
+  ></audio>
+
+  <!-- Original dungeon ambience -->
+  <audio
+    id="dungeonMusic"
+    src="dungeon-ambient.wav"
+    preload="auto"
+    loop
+  ></audio>
+
+  <!-- Your supplied soundtrack -->
+  Saw-SoundTrack.mp4</audio>
+
   <script type="module" src="app.js"></script>
 </body>
 </html>
