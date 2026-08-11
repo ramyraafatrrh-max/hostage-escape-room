@@ -25,7 +25,7 @@ $("registerBtn").onclick=async()=>{
 
 function startClock(){ clearInterval(tickHandle); updateClock(); tickHandle=setInterval(updateClock,1000); }
 function secondsLeft(){if(game.status!=="running"||!game.startedAt)return game.durationSeconds||3600; return Math.max(0,(game.durationSeconds||3600)-Math.floor((Date.now()-game.startedAt.toMillis())/1000));}
-function updateClock(){const left=secondsLeft(), m=String(Math.floor(left/60)).padStart(2,"0"),s=String(left%60).padStart(2,"0"),text=`${m}:${s}`; $("playerTimer").textContent=text;$("ownerTimer").textContent=text;$("gasBar").style.width=`${100-(left/3600*100)}%`;$("gameStatus").textContent=game.status==="running"?(left?"Game in progress":"TIME EXPIRED"):"Waiting to start";}
+function updateClock(){const running=game.status==="running";const left=secondsLeft(),m=String(Math.floor(left/60)).padStart(2,"0"),s=String(left%60).padStart(2,"0");$("playerTimer").textContent=`${m}:${s}`;$("gasBar").style.width=running?`${100-(left/3600*100)}%`:"0%";$("waitingOverlay").classList.toggle("hidden",running);$("gasStatus").textContent=running?(left?"RISING":"CRITICAL"):"STANDBY";const video=$("hostageVideo");if(running){video.play().catch(()=>{});}else{video.pause();video.currentTime=0;}}
 function escapeHtml(v){return String(v).replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));}
 function friendly(e){console.error(e);return e.message?.replace("Firebase: ","")||"Something went wrong.";}
 onAuthStateChanged(auth,async user=>{if(!user)return; if(user.isAnonymous){const s=await getDoc(doc(db,"teams",user.uid));if(s.exists()){currentTeam=s.data();openPlayer(user.uid);}}});

@@ -94,3 +94,8 @@ teams/{anonymousAuthUid}
 - Owner link: `https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/owner.html`
 
 The player page contains no button, menu, or link to the owner page. `owner.html` also includes a `noindex` directive to discourage search-engine indexing. The URL itself is not a security boundary: even if somebody guesses it, Firebase Authentication and Firestore Security Rules prevent access without the configured owner account. Keep the owner URL private and use a strong unique password.
+
+
+## Hostage video and live start behavior
+
+The player page includes `hostage-loop.mp4` and a poster image. Before Start, players see a waiting overlay and 60:00. When the owner starts, the Firestore listener removes the overlay, starts the muted inline video, and begins the synchronized countdown.

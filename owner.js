@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebas
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, updateDoc, onSnapshot, collection, query, serverTimestamp, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
-const OWNER_EMAIL="ramyraafat.rrh@gmail.com";
+const OWNER_EMAIL="owner@example.com";
 const TASKS=["Decode the transmission","Identify the antidote","Unlock the control panel","Trace the ventilation route","Enter the release code"];
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 let game={},tickHandle=null,teamsUnsub=null;

@@ -24,11 +24,11 @@
     <header class="topbar"><div><p id="teamLabel" class="eyebrow danger"></p><h2>Hostage Rescue</h2></div><div id="playerTimer" class="timer">60:00</div></header>
     <main class="mobile-main">
       <div id="hostageTab" class="tab-panel">
-        <div class="hostage-scene" aria-label="A hostage silhouette tied to a chair in a dark dungeon">
-          <div class="lamp"></div><div class="brick b1"></div><div class="brick b2"></div><div class="brick b3"></div>
-          <div class="hostage"><div class="head"></div><div class="body"></div><div class="arms"></div><div class="chair"></div></div>
-          <div class="gas"></div>
-          <div class="gas-card"><span>Gas concentration</span><strong>RISING</strong><div class="bar"><i id="gasBar"></i></div></div>
+        <div class="hostage-scene" aria-label="Live hostage camera in a dark dungeon">
+          <video id="hostageVideo" class="hostage-video" autoplay muted loop playsinline preload="auto" poster="hostage-dungeon.png"><source src="hostage-loop.mp4" type="video/mp4" /></video>
+          <div id="waitingOverlay" class="waiting-overlay"><strong>MISSION NOT STARTED</strong><span>Waiting for Mission Command</span></div>
+          <div class="video-vignette"></div>
+          <div class="gas-card"><span>Gas concentration</span><strong id="gasStatus">STANDBY</strong><div class="bar"><i id="gasBar"></i></div></div>
         </div>
       </div>
       <div id="missionsTab" class="tab-panel hidden">
