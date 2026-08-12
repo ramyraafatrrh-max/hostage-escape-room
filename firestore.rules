@@ -9,6 +9,27 @@ service cloud.firestore {
       allow write: if isOwner();
     }
 
+    function answersAreValid(data) {
+      return (data.solved.get('task1', false) != true || data.submissions.get('task1', '') == '11117839')
+        && (data.solved.get('task2', false) != true || data.submissions.get('task2', '') == '56139')
+        && (data.solved.get('task3', false) != true || data.submissions.get('task3', '') == '793459')
+        && (data.solved.get('task4', false) != true || data.submissions.get('task4', '') == '85432')
+        && (data.solved.get('task5', false) != true || data.submissions.get('task5', '') == 'reconciliation');
+    }
+
+    function completionIsValid(data) {
+      return data.completed != true || (
+        data.solved.get('task1', false) == true
+        && data.solved.get('task2', false) == true
+        && data.solved.get('task3', false) == true
+        && data.solved.get('task4', false) == true
+        && data.solved.get('task5', false) == true
+        && data.remainingSeconds is int
+        && data.remainingSeconds >= 0
+        && data.remainingSeconds <= 3600
+      );
+    }
+
     match /teams/{teamId} {
       allow read: if isOwner() || (signedIn() && request.auth.uid == teamId);
       allow create: if signedIn()
@@ -19,13 +40,17 @@ service cloud.firestore {
                     && request.resource.data.name.size() <= 30
                     && request.resource.data.accessCode is string
                     && request.resource.data.accessCode.size() >= 6
-                    && request.resource.data.accessCode.size() <= 30;
+                    && request.resource.data.accessCode.size() <= 30
+                    && request.resource.data.completed == false
+                    && request.resource.data.remainingSeconds == null;
       allow update: if isOwner() || (
         signedIn() && request.auth.uid == teamId
         && request.resource.data.ownerUid == resource.data.ownerUid
         && request.resource.data.name == resource.data.name
         && request.resource.data.accessCode == resource.data.accessCode
-        && request.resource.data.solved == resource.data.solved
+        && answersAreValid(request.resource.data)
+        && completionIsValid(request.resource.data)
+        && (resource.data.completed != true || request.resource.data.completed == true)
       );
       allow delete: if isOwner();
     }

@@ -1,9 +1,9 @@
 // Firebase Console > Project settings > Your apps > Web app > SDK setup and configuration.
 export const firebaseConfig = {
-  apiKey: "AIzaSyAIZuezO47a8PcSkbhdqQRF9LfJnsP-SVg",
-  authDomain: "hostage-game-dda89.firebaseapp.com",
-  projectId: "hostage-game-dda89",
-  storageBucket: "hostage-game-dda89.firebasestorage.app",
-  messagingSenderId: "968050038111",
-  appId: "1:968050038111:web:f666ec6810cbc189fe52ea"
+  apiKey: "PASTE_YOUR_API_KEY",
+  authDomain: "PASTE_YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "PASTE_YOUR_PROJECT_ID",
+  storageBucket: "PASTE_YOUR_PROJECT_ID.firebasestorage.app",
+  messagingSenderId: "PASTE_YOUR_SENDER_ID",
+  appId: "PASTE_YOUR_APP_ID"
 };

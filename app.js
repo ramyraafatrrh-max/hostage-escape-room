@@ -3,7 +3,8 @@ import { getAuth, signInAnonymously, signOut, onAuthStateChanged } from "https:/
 import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
-const TASKS = ["Decode the transmission", "Identify the antidote", "Unlock the control panel", "Trace the ventilation route", "Enter the release code"];
+const TASKS = ["Mission 1", "Mission 2", "Mission 3", "Mission 4", "Mission 5"];
+const ANSWERS = ["11117839", "56139", "793459", "85432", "reconciliation"];
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
@@ -19,6 +20,7 @@ let resetting = false;
 let wakeLock = null;
 let audioEnabled = localStorage.getItem("escapeAudioEnabled") === "true";
 let lastAlertBucket = 0;
+let celebrationShown = false;
 
 function show(id) {
   screens.forEach(screen => $(screen).classList.toggle("hidden", screen !== id));
@@ -185,6 +187,11 @@ function switchTab(name) {
   $("missionsNav").classList.toggle("active", name === "missions");
 }
 
+$("closeCelebrationBtn").onclick = () => {
+  $("rescueCelebration").classList.add("hidden");
+  switchTab("missions");
+};
+
 $("toggleAccessCode").onclick = () => {
   const accessCode = $("teamAccessCode");
   const confirmation = $("confirmTeamAccessCode");
@@ -216,7 +223,10 @@ $("registerBtn").onclick = async () => {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         submissions: {},
-        solved: {}
+        solved: {},
+        completed: false,
+        completedAt: null,
+        remainingSeconds: null
       });
     }
 
@@ -246,6 +256,8 @@ function openPlayer(uid) {
       if (gameUnsub) gameUnsub();
       stopBackgroundAudio();
       stopAndRewind($("hostageVideo"));
+      $("rescueCelebration").classList.add("hidden");
+      celebrationShown = false;
       currentTeam = null;
       $("teamName").value = "";
       $("teamAccessCode").value = "";
@@ -263,6 +275,29 @@ function openPlayer(uid) {
   }, error => toast(friendly(error)));
 }
 
+function normalizeAnswer(value, index) {
+  const trimmed = value.trim();
+  return index === 4 ? trimmed.toLowerCase() : trimmed;
+}
+
+function formatTime(totalSeconds) {
+  const safe = Math.max(0, Number(totalSeconds) || 0);
+  return `${String(Math.floor(safe / 60)).padStart(2, "0")}:${String(safe % 60).padStart(2, "0")}`;
+}
+
+function showMissionResult(success, missionNumber) {
+  toast(success ? `Mission ${missionNumber} Success` : `Mission ${missionNumber} Failure. Try again.`);
+}
+
+function showCelebration(team) {
+  if (celebrationShown) return;
+  celebrationShown = true;
+  $("savedTimeRemaining").textContent = formatTime(team.remainingSeconds);
+  $("rescueCelebration").classList.remove("hidden");
+  stopBackgroundAudio();
+  stopAndRewind($("hostageVideo"));
+}
+
 function renderTasks(uid, team) {
   const solved = team.solved || {};
   const submissions = team.submissions || {};
@@ -272,29 +307,46 @@ function renderTasks(uid, team) {
   $("progressBar").style.width = `${count * 20}%`;
   $("taskList").innerHTML = TASKS.map((title, index) => {
     const key = `task${index + 1}`;
-    const status = solved[key] ? "SOLVED" : submissions[key] ? "PENDING" : "UNSOLVED";
-    return `<details class="panel task"><summary><span><b>${index + 1}</b>${title}</span><em class="${status.toLowerCase()}">${status}</em></summary><textarea id="answer-${index}" maxlength="500" placeholder="Enter your response" ${solved[key] ? "disabled" : ""}>${escapeHtml(submissions[key] || "")}</textarea><button data-task="${index}" class="primary submit-answer" ${solved[key] ? "disabled" : ""}>Submit response</button></details>`;
+    const isSolved = solved[key] === true;
+    const response = submissions[key] || "";
+    return `<details class="panel task ${isSolved ? "task-solved" : ""}" ${isSolved ? "open" : ""}>
+      <summary><span><b>${index + 1}</b>${title}</span><em class="${isSolved ? "solved" : "unsolved"}">${isSolved ? "SUCCESS" : "NOT COMPLETE"}</em></summary>
+      <textarea id="answer-${index}" maxlength="100" placeholder="Enter your response" ${isSolved || team.completed ? "disabled" : ""}>${escapeHtml(response)}</textarea>
+      <button data-task="${index}" class="primary submit-answer" ${isSolved || team.completed ? "disabled" : ""}>Submit response</button>
+    </details>`;
   }).join("");
 
   document.querySelectorAll(".submit-answer").forEach(button => button.onclick = async () => {
     const index = Number(button.dataset.task);
     const key = `task${index + 1}`;
-    const answer = $(`answer-${index}`).value.trim();
-    if (!answer) return toast("Enter a response first.");
+    const entered = normalizeAnswer($(`answer-${index}`).value, index);
+    if (!entered) return toast("Enter a response first.");
+
+    const success = entered === ANSWERS[index];
+    const nextSolved = { ...(currentTeam.solved || {}), [key]: success };
+    const allSolved = TASKS.every((_, taskIndex) => nextSolved[`task${taskIndex + 1}`] === true);
+    const remaining = allSolved ? secondsLeft() : null;
 
     try {
-      await updateDoc(doc(db, "teams", uid), {
-        [`submissions.${key}`]: answer,
-        [`solved.${key}`]: false,
+      const changes = {
+        [`submissions.${key}`]: entered,
+        [`solved.${key}`]: success,
         updatedAt: serverTimestamp()
-      });
-      toast("Response sent to Mission Command.");
+      };
+      if (allSolved) {
+        changes.completed = true;
+        changes.completedAt = serverTimestamp();
+        changes.remainingSeconds = remaining;
+      }
+      await updateDoc(doc(db, "teams", uid), changes);
+      showMissionResult(success, index + 1);
     } catch (error) {
       toast(friendly(error));
     }
   });
-}
 
+  if (team.completed) showCelebration(team);
+}
 function startClock() {
   clearInterval(tickHandle);
   updateClock();
@@ -307,16 +359,17 @@ function secondsLeft() {
 }
 
 function updateClock() {
-  const running = game.status === "running";
-  const left = secondsLeft();
+  const teamCompleted = currentTeam?.completed === true;
+  const running = game.status === "running" && !teamCompleted;
+  const left = teamCompleted ? (currentTeam.remainingSeconds || 0) : secondsLeft();
   const minutes = String(Math.floor(left / 60)).padStart(2, "0");
   const seconds = String(left % 60).padStart(2, "0");
   const text = `${minutes}:${seconds}`;
 
   $("playerTimer").textContent = text;
   $("dungeonTimer").textContent = text;
-  $("preGameView").classList.toggle("hidden", running);
-  $("dungeonView").classList.toggle("hidden", !running);
+  $("preGameView").classList.toggle("hidden", running || teamCompleted);
+  $("dungeonView").classList.toggle("hidden", !running && !teamCompleted);
   $("gasBar").style.width = running ? `${100 - (left / 3600 * 100)}%` : "0%";
   $("gasStatus").textContent = left ? "RISING" : "CRITICAL";
 

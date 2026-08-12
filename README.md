@@ -121,3 +121,8 @@ Reset also clears the owner team grid immediately, deletes every Firestore team 
 ## Team access codes
 
 Registration requires a team access code and confirmation. The value is stored in each team document as `accessCode` for an authorized connected application. Players are warned not to reuse a personal password. Publish the updated `firestore.rules` after deploying the web files. Existing teams must be reset and register again.
+
+
+## Automatic mission validation and rescue completion
+
+The five buttons are labeled Mission 1 through Mission 5. Responses are checked immediately. Mission 5 is normalized to lowercase, so `reconciliation` is accepted regardless of capitalization. Successful missions turn green. When all five missions are solved, the team document receives `completed`, `completedAt`, and `remainingSeconds`; the player timer freezes for that team, media stops, and a rescue celebration appears. Mission Command marks the completed team green with a completion check and saved time. The supplied Firestore Rules repeat the answer validation, so a client cannot mark a mission successful with an incorrect stored response. Publish the updated rules before testing.
