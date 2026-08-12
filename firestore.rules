@@ -1,22 +1,53 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() { return request.auth != null; }
-    function isOwner() { return signedIn() && request.auth.token.email == 'ramyraafat.rrh@gmail.com'; }
 
-    match /games/{gameId} {
-      allow read: if signedIn();
-      allow write: if isOwner();
+    /*
+     * Shared authentication helpers
+     */
+    function signedIn() {
+      return request.auth != null;
     }
 
+    function isOwner() {
+      return signedIn()
+        && request.auth.token.email == 'ramyraafat.rrh@gmail.com';
+    }
+
+    /*
+     * Validate answers before allowing a mission to be marked solved.
+     *
+     * Mission 5 is stored in lowercase by the player application,
+     * allowing Reconciliation, RECONCILIATION, and other capitalization.
+     */
     function answersAreValid(data) {
-      return (data.solved.get('task1', false) != true || data.submissions.get('task1', '') == '11117839')
-        && (data.solved.get('task2', false) != true || data.submissions.get('task2', '') == '56139')
-        && (data.solved.get('task3', false) != true || data.submissions.get('task3', '') == '793459')
-        && (data.solved.get('task4', false) != true || data.submissions.get('task4', '') == '85432')
-        && (data.solved.get('task5', false) != true || data.submissions.get('task5', '') == 'reconciliation');
+      return (
+        data.solved.get('task1', false) != true
+        || data.submissions.get('task1', '') == '11117839'
+      )
+      && (
+        data.solved.get('task2', false) != true
+        || data.submissions.get('task2', '') == '56139'
+      )
+      && (
+        data.solved.get('task3', false) != true
+        || data.submissions.get('task3', '') == '793459'
+      )
+      && (
+        data.solved.get('task4', false) != true
+        || data.submissions.get('task4', '') == '85432'
+      )
+      && (
+        data.solved.get('task5', false) != true
+        || data.submissions.get('task5', '') == 'reconciliation'
+      );
     }
 
+    /*
+     * A team can be marked completed only after all five missions
+     * are solved and the stored remaining time is valid.
+     */
     function completionIsValid(data) {
       return data.completed != true || (
         data.solved.get('task1', false) == true
@@ -30,29 +61,139 @@ service cloud.firestore {
       );
     }
 
+    /*
+     * Matchstick game integration
+     *
+     * Kept isolated in the stickTeams collection.
+     * Anyone can read a stick-team document.
+     * The only permitted update is changing the solved field.
+     * Client applications cannot create or delete these documents.
+     */
+    match /stickTeams/{teamId} {
+      allow read: if true;
+
+      allow update: if request.resource.data
+        .diff(resource.data)
+        .affectedKeys()
+        .hasOnly(['solved']);
+
+      allow create, delete: if false;
+    }
+
+    /*
+     * Shared read-only configuration
+     */
+    match /config/{documentId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    /*
+     * Shared clock integration
+     *
+     * This remains publicly readable and writable because that was
+     * the behavior in the supplied integration rules.
+     */
+    match /_clock/{documentId} {
+      allow read, write: if true;
+    }
+
+    /*
+     * Hostage Escape global game state
+     *
+     * Registered teams can read the timer and game status.
+     * Only the configured owner can start, reset, or change the game.
+     */
+    match /games/{gameId} {
+      allow read: if signedIn();
+      allow create, update, delete: if isOwner();
+    }
+
+    /*
+     * Hostage Escape team records
+     *
+     * The owner can read every team.
+     * Each anonymous player can read only the team document whose
+     * document ID matches the player's Firebase Authentication UID.
+     */
     match /teams/{teamId} {
-      allow read: if isOwner() || (signedIn() && request.auth.uid == teamId);
+      allow read: if isOwner()
+        || (
+          signedIn()
+          && request.auth.uid == teamId
+        );
+
+      /*
+       * New team registration
+       */
       allow create: if signedIn()
-                    && request.auth.uid == teamId
-                    && request.resource.data.ownerUid == request.auth.uid
-                    && request.resource.data.name is string
-                    && request.resource.data.name.size() >= 1
-                    && request.resource.data.name.size() <= 30
-                    && request.resource.data.accessCode is string
-                    && request.resource.data.accessCode.size() >= 6
-                    && request.resource.data.accessCode.size() <= 30
-                    && request.resource.data.completed == false
-                    && request.resource.data.remainingSeconds == null;
+        && request.auth.uid == teamId
+        && request.resource.data.ownerUid == request.auth.uid
+
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 1
+        && request.resource.data.name.size() <= 30
+
+        && request.resource.data.accessCode is string
+        && request.resource.data.accessCode.size() >= 6
+        && request.resource.data.accessCode.size() <= 30
+
+        && request.resource.data.submissions is map
+        && request.resource.data.solved is map
+
+        && request.resource.data.completed == false
+        && request.resource.data.completedAt == null
+        && request.resource.data.remainingSeconds == null;
+
+      /*
+       * Team progress updates
+       *
+       * The owner can update any team document.
+       * A player can update only the player's own document.
+       */
       allow update: if isOwner() || (
-        signedIn() && request.auth.uid == teamId
-        && request.resource.data.ownerUid == resource.data.ownerUid
-        && request.resource.data.name == resource.data.name
-        && request.resource.data.accessCode == resource.data.accessCode
+        signedIn()
+        && request.auth.uid == teamId
+
+        /*
+         * Immutable registration fields
+         */
+        && request.resource.data.ownerUid
+          == resource.data.ownerUid
+
+        && request.resource.data.name
+          == resource.data.name
+
+        && request.resource.data.accessCode
+          == resource.data.accessCode
+
+        /*
+         * Mission and completion validation
+         */
         && answersAreValid(request.resource.data)
         && completionIsValid(request.resource.data)
-        && (resource.data.completed != true || request.resource.data.completed == true)
+
+        /*
+         * A completed team cannot return itself to incomplete.
+         * Owner Reset deletes the entire team document instead.
+         */
+        && (
+          resource.data.completed != true
+          || request.resource.data.completed == true
+        )
       );
+
+      /*
+       * Only the owner can delete teams during Reset.
+       */
       allow delete: if isOwner();
+    }
+
+    /*
+     * Everything not explicitly matched above is denied.
+     */
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
